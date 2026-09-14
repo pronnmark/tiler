@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-# Global yabai config
+# ── Global yabai config ──────────────────────────────────────
 yabai -m config                                 \
     external_bar                 off:40:0       \
     menubar_opacity              1.0            \
@@ -34,28 +34,38 @@ yabai -m config                                 \
     mouse_action2                resize         \
     mouse_drop_action            swap
 
-# Default: manage=off for everything (float like normal macOS)
-yabai -m rule --add manage=off
-
-# Only tile specific apps on the rightmost display (display index 2)
-# Tile Google Chrome on display 2 (rightmost)
-yabai -m rule --add app="^Google Chrome$" display=2 manage=on
-# Also tile Chromium if used (CloakBrowser)
-yabai -m rule --add app="^Chromium$" display=2 manage=on
-# Optionally tile Firefox, Safari if desired
-# yabai -m rule --add app="^Firefox$" display=2 manage=on
-# yabai -m rule --add app="^Safari$" display=2 manage=on
-
-# Float common utility apps everywhere (even on right screen)
-yabai -m rule --add app="^System Settings$" manage=off
-yabai -m rule --add app="^System Information$" manage=off
-yabai -m rule --add app="^Archive Utility$" manage=off
-yabai -m rule --add app="^Tailscale$" manage=off
-yabai -m rule --add app="^1Password$" manage=off
-yabai -m rule --add app="^QuickTime Player$" manage=off
+# ── Real utility/dialog app exceptions (never tiled, anywhere) ─
+# NOTE: don't use subrole="^AXDialog$" as a blanket rule — some
+# full app main windows (CloakBrowser Manager, Clearly) report
+# AXDialog as their subrole and would get wrongly excluded.
+yabai -m rule --add app="^System Settings$"     manage=off
+yabai -m rule --add app="^System Information$"  manage=off
+yabai -m rule --add app="^Archive Utility$"     manage=off
+yabai -m rule --add app="^Tailscale$"           manage=off
+yabai -m rule --add app="^1Password$"           manage=off
+yabai -m rule --add app="^QuickTime Player$"    manage=off
 yabai -m rule --add app="^Finder$" title="(Copy|Move|Trash|Delete|Info|Preferences)" manage=off
-yabai -m rule --add subrole="^AXDialog$" manage=off
-yabai -m rule --add subrole="^AXSystemDialog$" manage=off
-yabai -m rule --add role="^AXPopover$" manage=off
+yabai -m rule --add role="^AXPopover$"          manage=off
+
+# ── Per-space layout: only the rightmost display tiles ─────────
+# display 2 (yabai index, physical rightmost monitor) = bsp (tiled)
+# display 1 (center) and display 3 (left/laptop)      = float
+yabai -m space 1 --layout float 2>/dev/null
+yabai -m space 3 --layout float 2>/dev/null
+yabai -m space 2 --layout bsp   2>/dev/null
+
+# Keep new spaces correctly floating/tiling based on which display
+# they land on (covers Mission Control adding spaces later).
+yabai -m signal --add event=space_created \
+    action="/Users/pmac/Documents/GitHub/tiler/scripts/handle-space-created.sh"
+
+# ── New-window handling ─────────────────────────────────────────
+# Every new window (any app, unless in the exception list above)
+# gets moved to display 2 and force-tiled.
+yabai -m signal --add event=window_created \
+    action="/Users/pmac/Documents/GitHub/tiler/scripts/handle-new-window.sh"
+
+# ── Fix stale/never-tiled windows from before this config ran ──
+/Users/pmac/Documents/GitHub/tiler/scripts/retile-all.sh >/tmp/yabai_retile.log 2>&1 &
 
 echo "yabai configuration loaded.."
