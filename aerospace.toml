@@ -1,0 +1,108 @@
+# AeroSpace config — only the RIGHTMOST monitor tiles.
+# Center (primary) and left (MacBook built-in) stay in 'floating' mode,
+# which lets windows behave like normal free-floating macOS windows
+# (matches the original yabai requirement, ported here).
+#
+# Docs: https://nikitabobko.github.io/AeroSpace/guide
+
+config-version = 2
+
+# ── New-window routing ────────────────────────────────────────────
+# Every new window (except a short exception list of real utility/
+# dialog apps) gets moved to workspace T (pinned to the rightmost
+# monitor) and tiled. Exception apps stay wherever macOS opens them
+# and float instead of getting yanked across screens.
+# NOTE: top-level array keys like this MUST appear before the first
+# [section] / [[array-of-tables]] header, otherwise TOML silently
+# folds them into whichever table preceded them.
+on-window-detected = [
+    { if = { app-name-regex-substring = '^(System Settings|System Information|Archive Utility|Tailscale|1Password|QuickTime Player)$' },
+      run = ['layout floating'] },
+    { if = 'true', run = ['move-node-to-workspace T', 'layout tiling accordion'] },
+]
+
+# Start AeroSpace at login
+start-at-login = true
+after-startup-command = []
+
+# Auto-reload config on save (once this is set, reload once manually to enable)
+auto-reload-config = true
+
+# Normalization: auto-flattens single-child nested containers, so plain
+# 'tiles' layout doesn't keep nesting splits pointlessly and doesn't
+# crush windows into slivers the way yabai's raw BSP did.
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+
+accordion-padding = 30
+
+# tiles|accordion — tiles crushes windows into an ever-shrinking grid as
+# more pile onto the screen (confirmed: 9 windows on a 1920x1080 monitor
+# shrank to ~500px-wide slivers, same problem yabai's raw BSP had).
+# accordion keeps EVERY window near full monitor size (offset stack of
+# full-height cards, only current one fully on top) -- this is the fix
+# for "windows cutting off major parts of the application".
+default-root-container-layout = 'accordion'
+default-root-container-orientation = 'auto'
+
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+automatically-unhide-macos-hidden-apps = false
+
+# Keep these 3 workspaces alive even with no windows in them.
+persistent-workspaces = ['T', 'C', 'L']
+
+key-mapping.preset = 'qwerty'
+focus-follows-mouse.enabled = false
+
+[gaps]
+inner.horizontal = 8
+inner.vertical = 8
+outer.left = 8
+outer.bottom = 8
+outer.top = 8
+outer.right = 8
+
+# ── Workspace-to-monitor assignment ──────────────────────────────
+# `aerospace list-monitors` on this machine reports:
+#   1  Built-in Retina Display   -> left/laptop screen
+#   2  LS24DG30X (1)             -> center/primary monitor (main, origin 0,0)
+#   3  LS24DG30X (2)             -> RIGHTMOST monitor, origin (1920,0)
+# Confirmed via `cliclick` mouse-move + `aerospace list-monitors --focused`,
+# cross-checked against `displayplacer list` (contextual screen id 3).
+# Both externals share the same model name, so monitor-id (not name) is
+# used for the two LS24DG30X units to avoid ambiguity.
+[workspace-to-monitor-force-assignment]
+T = 3              # rightmost external monitor -- the ONLY tiled screen
+C = 2              # center/primary external monitor -- floating
+L = 'Built-in'     # MacBook built-in display -- floating
+
+# ── Keybindings ─────────────────────────────────────────────────
+[mode.main.binding]
+alt-h = 'focus left'
+alt-j = 'focus down'
+alt-k = 'focus up'
+alt-l = 'focus right'
+
+alt-shift-h = 'move left'
+alt-shift-j = 'move down'
+alt-shift-k = 'move up'
+alt-shift-l = 'move right'
+
+alt-minus = 'resize smart -50'
+alt-equal = 'resize smart +50'
+
+# switch layout of the focused window's container: grid / accordion / float
+alt-t = 'layout tiles'
+alt-comma = 'layout accordion'
+alt-f = 'layout floating tiling'
+
+alt-tab = 'workspace-back-and-forth'
+alt-1 = 'workspace T'
+alt-2 = 'workspace C'
+alt-3 = 'workspace L'
+
+alt-shift-1 = 'move-node-to-workspace T'
+alt-shift-2 = 'move-node-to-workspace C'
+alt-shift-3 = 'move-node-to-workspace L'
+
+cmd-alt-r = 'reload-config'
