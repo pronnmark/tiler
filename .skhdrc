@@ -1,0 +1,81 @@
+# ─────────────────────────────────────────────────────────────
+#  skhd — keybindings for yabai and system
+#  reload:  skhd --reload
+# ─────────────────────────────────────────────────────────────
+
+# launch WezTerm
+cmd + shift - t : open -a WezTerm
+
+# ctrl+cmd+r -> send ctrl+x ctrl+r (shell rc-reload binding)
+ctrl + cmd - r : /opt/homebrew/bin/skhd -k "ctrl - x"; skhd -k "ctrl - r"
+
+# ctrl+alt+s        -> Gyazo-style: drag a region, upload, URL on clipboard
+# ctrl+alt+w        -> pick a window, upload, URL on clipboard
+# ctrl+alt+3        -> capture the main display, upload, URL on clipboard
+# ctrl+alt+shift+s  -> same grab, but hand it to ksnip to annotate first
+
+# ── focus window (alt + hjkl / arrows) ───────────────────────
+alt - h : yabai -m window --focus west
+alt - j : yabai -m window --focus south
+alt - k : yabai -m window --focus north
+alt - l : yabai -m window --focus east
+
+alt - left  : yabai -m window --focus west
+alt - down  : yabai -m window --focus south
+alt - up    : yabai -m window --focus north
+alt - right : yabai -m window --focus east
+
+# cycle through windows
+alt - tab         : yabai -m window --focus next || yabai -m window --focus first
+shift + alt - tab : yabai -m window --focus prev || yabai -m window --focus last
+
+# ── move / swap window (shift + alt + hjkl) ──────────────────
+shift + alt - h : yabai -m window --swap west
+shift + alt - j : yabai -m window --swap south
+shift + alt - k : yabai -m window --swap north
+shift + alt - l : yabai -m window --swap east
+
+# warp = re-insert into the tree at that position (changes the split)
+ctrl + alt - h : yabai -m window --warp west
+ctrl + alt - j : yabai -m window --warp south
+ctrl + alt - k : yabai -m window --warp north
+ctrl + alt - l : yabai -m window --warp east
+
+# ── resize (shift + cmd + hjkl) ──────────────────────────────
+shift + cmd - h : yabai -m window --resize left:-60:0  || yabai -m window --resize right:-60:0
+shift + cmd - j : yabai -m window --resize bottom:0:60 || yabai -m window --resize top:0:60
+shift + cmd - k : yabai -m window --resize bottom:0:-60 || yabai -m window --resize top:0:-60
+shift + cmd - l : yabai -m window --resize right:60:0 || yabai -m window --resize left:60:0
+
+# equalise / rebalance all windows
+shift + alt - e : yabai -m space --balance
+
+# ── layout ───────────────────────────────────────────────────
+# toggle bsp <-> float
+alt - e : yabai -m space --layout "$(yabai -m query --spaces --space | python3 -c 'import sys,json;print("float" if json.load(sys.stdin)["type"]=="bsp" else "bsp")')"
+
+# rotate the tree 90 degrees
+alt - r : yabai -m space --rotate 90
+
+# mirror the tree
+alt - y : yabai -m space --mirror y-axis
+alt - x : yabai -m space --mirror x-axis
+
+# flip the split direction of the focused window
+alt - s : yabai -m window --toggle split
+
+# ── window state ─────────────────────────────────────────────
+# float / unfloat and centre
+shift + alt - space : yabai -m window --toggle float --grid 4:4:1:1:2:2
+
+# fullscreen within the tiling area (zoom)
+alt - f : yabai -m window --toggle zoom-fullscreen
+
+# fullscreen the parent split
+alt - d : yabai -m window --toggle zoom-parent
+
+# native macOS fullscreen
+shift + alt - f : yabai -m window --toggle native-fullscreen
+
+# ── restart yabai ────────────────────────────────────────────
+ctrl + alt - r : yabai --restart-service
