@@ -29,6 +29,13 @@ alt - right : yabai -m window --focus east
 alt - tab         : yabai -m window --focus next || yabai -m window --focus first
 shift + alt - tab : yabai -m window --focus prev || yabai -m window --focus last
 
+# cycle through STACKED windows (windows sharing the same tile slot)
+alt - grave         : yabai -m window --focus stack.next || yabai -m window --focus stack.first
+shift + alt - grave : yabai -m window --focus stack.prev || yabai -m window --focus stack.last
+
+# pop the focused window out of its stack back into the BSP tree
+shift + alt - z : yabai -m window --insert stack
+
 # ── move / swap window (shift + alt + hjkl) ──────────────────
 shift + alt - h : yabai -m window --swap west
 shift + alt - j : yabai -m window --swap south
